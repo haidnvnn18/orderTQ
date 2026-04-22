@@ -1,33 +1,14 @@
 // ============================================================
-// Product Service — Data Access Layer
+// Product Service — Data Access Layer (Prisma ORM)
 // ============================================================
-// This is the ONLY file you modify when connecting to your backend.
-// Queries (queries.ts) and components import from here — they never change.
-//
-// Pick your pattern and replace the function bodies below:
-//
-// 1. Server Actions + ORM (Prisma / Drizzle / Supabase)
-//    → Add 'use server' at the top of this file
-//    → Call your ORM directly in each function
-//
-// 2. Route Handlers + ORM
-//    → import { apiClient } from '@/lib/api-client'
-//    → return apiClient<ProductsResponse>('/products?...')
-//    → Replace mock calls in route handlers (src/app/api/products/) with ORM
-//
-// 3. BFF — Route Handlers proxy to external backend (Laravel, Go, etc.)
-//    → import { apiClient } from '@/lib/api-client'
-//    → return apiClient<ProductsResponse>('/products?...')
-//    → Route handlers proxy requests to your external backend service
-//
-// 4. Direct external API (frontend-only, no Next.js backend)
-//    → const res = await fetch('https://your-api.com/products?...')
-//    → return res.json()
-//
-// Current: Mock (in-memory fake data for demo/prototyping)
+// Chuyển từ Mock Data sang truy vấn Prisma thật.
+// Pattern: Server-side functions gọi trực tiếp từ RSC hoặc Server Actions.
 // ============================================================
 
-import { fakeProducts } from '@/constants/mock-api';
+'use server';
+
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 import type {
   ProductFilters,
   ProductsResponse,
@@ -36,21 +17,154 @@ import type {
 } from './types';
 
 export async function getProducts(filters: ProductFilters): Promise<ProductsResponse> {
-  return fakeProducts.getProducts(filters);
+  const page = filters.page ?? 1;
+  const limit = filters.limit ?? 10;
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = {};
+
+  // Lọc theo tên sản phẩm
+  if (filters.search) {
+    where.title = { contains: filters.search, mode: 'insensitive' };
+  }
+
+  // Lọc theo trạng thái hoạt động
+  if (filters.isActive !== undefined) {
+    where.isActive = filters.isActive;
+  }
+
+  // Xử lý sắp xếp
+  let orderBy: Record<string, string> = { createdAt: 'desc' };
+  if (filters.sort) {
+    try {
+      const sortArr = JSON.parse(filters.sort);
+      if (Array.isArray(sortArr) && sortArr.length > 0) {
+        const { id, desc: isDesc } = sortArr[0];
+        orderBy = { [id]: isDesc ? 'desc' : 'asc' };
+      }
+    } catch {
+      // Giữ mặc định nếu parse lỗi
+    }
+  }
+
+  const [products, totalProducts] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy,
+      include: {
+        supplier: { select: { id: true, name: true } },
+        _count: { select: { variants: true } }
+      }
+    }),
+    prisma.product.count({ where })
+  ]);
+
+  // Serialize Prisma Decimal to Number for Next.js Client Components
+  const serializedProducts = products.map((p) => ({
+    ...p,
+    basePriceCny: Number(p.basePriceCny)
+  })) as any[];
+
+  return {
+    products: serializedProducts,
+    totalProducts,
+    page,
+    limit
+  };
 }
 
-export async function getProductById(id: number): Promise<ProductByIdResponse> {
-  return fakeProducts.getProductById(id) as Promise<ProductByIdResponse>;
+export async function getProductById(id: string): Promise<ProductByIdResponse> {
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      variants: { orderBy: { sku: 'asc' } },
+      supplier: true
+    }
+  });
+
+  if (!product) return { product: null };
+
+  // Serialize Prisma Decimal to Number
+  const serializedProduct = {
+    ...product,
+    basePriceCny: Number(product.basePriceCny),
+    variants: product.variants.map((v) => ({
+      ...v,
+      priceAdjustmentCny: Number(v.priceAdjustmentCny)
+    }))
+  } as any;
+
+  return { product: serializedProduct };
 }
 
 export async function createProduct(data: ProductMutationPayload) {
-  return fakeProducts.createProduct(data);
+  const product = await prisma.product.create({
+    data: {
+      title: data.title,
+      description: data.description ?? null,
+      basePriceCny: data.basePriceCny,
+      images: data.images ?? [],
+      supplierId: data.supplierId ?? null,
+      isActive: data.isActive ?? true,
+      variants: {
+        create: data.variants.map((v) => ({
+          sku: v.sku,
+          attributes: v.attributes,
+          priceAdjustmentCny: v.priceAdjustmentCny ?? 0,
+          variantImageUrl: v.variantImageUrl ?? null
+        }))
+      }
+    },
+    include: {
+      variants: true,
+      supplier: true
+    }
+  });
+
+  revalidatePath('/dashboard/product');
+  return product as any; // Ignore decimal type for mutation return
 }
 
-export async function updateProduct(id: number, data: ProductMutationPayload) {
-  return fakeProducts.updateProduct(id, data);
+export async function updateProduct(id: string, data: ProductMutationPayload) {
+  const product = await prisma.$transaction(async (tx) => {
+    await tx.productVariant.deleteMany({ where: { productId: id } });
+
+    return tx.product.update({
+      where: { id },
+      data: {
+        title: data.title,
+        description: data.description ?? null,
+        basePriceCny: data.basePriceCny,
+        images: data.images ?? [],
+        supplierId: data.supplierId ?? null,
+        isActive: data.isActive ?? true,
+        variants: {
+          create: data.variants.map((v) => ({
+            sku: v.sku,
+            attributes: v.attributes,
+            priceAdjustmentCny: v.priceAdjustmentCny ?? 0,
+            variantImageUrl: v.variantImageUrl ?? null
+          }))
+        }
+      },
+      include: {
+        variants: true,
+        supplier: true
+      }
+    });
+  });
+
+  revalidatePath('/dashboard/product');
+  return product as any;
 }
 
-export async function deleteProduct(id: number) {
-  return fakeProducts.deleteProduct(id);
+export async function deleteProduct(id: string) {
+  await prisma.product.update({
+    where: { id },
+    data: { isActive: false }
+  });
+
+  revalidatePath('/dashboard/product');
 }

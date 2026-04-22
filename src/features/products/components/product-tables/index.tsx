@@ -15,22 +15,20 @@ export function ProductTable() {
   const [params] = useQueryStates({
     page: parseAsInteger.withDefault(1),
     perPage: parseAsInteger.withDefault(10),
-    name: parseAsString,
-    category: parseAsString,
+    title: parseAsString,
     sort: getSortingStateParser(columnIds).withDefault([])
   });
 
   const filters = {
     page: params.page,
     limit: params.perPage,
-    ...(params.name && { search: params.name }),
-    ...(params.category && { categories: params.category }),
+    ...(params.title && { search: params.title }),
     ...(params.sort.length > 0 && { sort: JSON.stringify(params.sort) })
   };
 
   const { data } = useSuspenseQuery(productsQueryOptions(filters));
 
-  const pageCount = Math.ceil(data.total_products / params.perPage);
+  const pageCount = Math.ceil(data.totalProducts / params.perPage);
 
   const { table } = useDataTable({
     data: data.products,

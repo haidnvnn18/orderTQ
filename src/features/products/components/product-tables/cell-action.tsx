@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { deleteProductMutation } from '../../api/mutations';
-import type { Product } from '../../api/types';
+import type { ProductListItem } from '../../api/types';
 import { Icons } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface CellActionProps {
-  data: Product;
+  data: ProductListItem;
 }
 
 export function CellAction({ data }: CellActionProps) {
@@ -27,11 +27,11 @@ export function CellAction({ data }: CellActionProps) {
   const deleteMutation = useMutation({
     ...deleteProductMutation,
     onSuccess: () => {
-      toast.success('Product deleted successfully');
+      toast.success('Sản phẩm đã được xóa');
       setOpen(false);
     },
     onError: () => {
-      toast.error('Failed to delete product');
+      toast.error('Không thể xóa sản phẩm');
     }
   });
 
@@ -46,17 +46,17 @@ export function CellAction({ data }: CellActionProps) {
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='h-8 w-8 p-0'>
-            <span className='sr-only'>Open menu</span>
+            <span className='sr-only'>Mở menu</span>
             <Icons.ellipsis className='h-4 w-4' />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end'>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
           <DropdownMenuItem onClick={() => router.push(`/dashboard/product/${data.id}`)}>
-            <Icons.edit className='mr-2 h-4 w-4' /> Update
+            <Icons.edit className='mr-2 h-4 w-4' /> Chỉnh sửa
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Icons.trash className='mr-2 h-4 w-4' /> Delete
+            <Icons.trash className='mr-2 h-4 w-4' /> Xóa
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

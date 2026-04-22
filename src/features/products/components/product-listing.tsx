@@ -6,16 +6,14 @@ import { ProductTable } from './product-tables';
 
 export default function ProductListingPage() {
   const page = searchParamsCache.get('page');
-  const search = searchParamsCache.get('name');
+  const search = searchParamsCache.get('title');
   const pageLimit = searchParamsCache.get('perPage');
-  const categories = searchParamsCache.get('category');
   const sort = searchParamsCache.get('sort');
 
   const filters = {
     page,
     limit: pageLimit,
     ...(search && { search }),
-    ...(categories && { categories }),
     ...(sort && { sort })
   };
 

@@ -20,6 +20,11 @@ const baseConfig: NextConfig = {
         protocol: 'https',
         hostname: 'clerk.com',
         port: ''
+      },
+      {
+        protocol: 'https',
+        hostname: 'nixmnidobbiraxqxfqdd.supabase.co',
+        port: ''
       }
     ]
   },

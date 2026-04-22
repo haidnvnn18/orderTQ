@@ -3,25 +3,40 @@ import * as z from 'zod';
 const MAX_FILE_SIZE = 5_000_000;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
+// Schema validation cho variant
+const variantSchema = z.object({
+  sku: z.string().min(1, 'Mã SKU không được để trống'),
+  attributes: z.record(z.string(), z.string()),
+  priceAdjustmentCny: z.number().optional(),
+  variantImageUrl: z.string().optional()
+});
+
 export const productSchema = z.object({
-  image: z
-    .any()
-    .refine((files) => files?.length == 1, 'Image is required.')
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, 'Max file size is 5MB.')
-    .refine(
-      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-      '.jpg, .jpeg, .png and .webp files are accepted.'
-    ),
-  name: z.string().min(2, 'Product name must be at least 2 characters.'),
-  category: z.string().min(1, 'Please select a category'),
-  price: z.number({ message: 'Price is required' }),
-  description: z.string().min(10, 'Description must be at least 10 characters.')
+  images: z.any().optional(),
+  title: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự.'),
+  basePriceCny: z.number({ message: 'Giá tệ gốc là bắt buộc' }).min(0, 'Giá không được âm'),
+  description: z.string().optional(),
+  supplierId: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
+  variants: z.array(variantSchema).min(1, 'Cần ít nhất 1 biến thể (SKU)')
 });
 
 export type ProductFormValues = {
-  image: File[] | undefined;
-  name: string;
-  category: string;
-  price: number | undefined;
+  images: File[] | undefined;
+  title: string;
+  basePriceCny: number | undefined;
   description: string;
+  supplierId: string | null;
+  isActive: boolean;
+  // Thuộc tính để sinh variants tự động
+  colors: string; // "Đỏ, Xanh, Hồng" — nhập bằng dấu phẩy
+  sizes: string; // "S, M, L, 90, 100"
+  skuPrefix: string; // VD: "VAY-01"
+  variants: {
+    sku: string;
+    attributes: Record<string, string>;
+    priceAdjustmentCny: number;
+    variantImageUrl: string;
+  }[];
+  existingImages: string[]; // URLs ảnh đã upload trước đó (khi edit)
 };
