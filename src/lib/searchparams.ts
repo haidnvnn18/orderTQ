@@ -13,10 +13,11 @@ export const searchParams = {
   gender: parseAsString,
   category: parseAsString,
   role: parseAsString,
-  sort: parseAsString
-  // advanced filter
-  // filters: getFiltersStateParser().withDefault([]),
-  // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')
+  sort: parseAsString,
+  search: parseAsString,
+  // Order filters
+  status: parseAsString,
+  financialStatus: parseAsString
 };
 
 export const searchParamsCache = createSearchParamsCache(searchParams);
