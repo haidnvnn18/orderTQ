@@ -8,12 +8,12 @@ const PHONE_REGEX = /^(0|\+84)(3[2-9]|5[6-9]|7[06-9]|8[0-9]|9[0-9])\d{7}$/;
 
 export const customerSchema = z.object({
   name: z
-    .string({ required_error: 'Tên khách hàng là bắt buộc' })
+    .string({ message: 'Tên khách hàng là bắt buộc' })
     .min(2, 'Tên phải có ít nhất 2 ký tự')
     .max(100, 'Tên không được vượt quá 100 ký tự'),
 
   phone: z
-    .string({ required_error: 'Số điện thoại là bắt buộc' })
+    .string({ message: 'Số điện thoại là bắt buộc' })
     .regex(PHONE_REGEX, 'Số điện thoại không hợp lệ (VD: 0901234567 hoặc +84901234567)'),
 
   email: z.string().email('Email không đúng định dạng').optional().or(z.literal('')),
@@ -21,7 +21,7 @@ export const customerSchema = z.object({
   address: z.string().max(255, 'Địa chỉ không được vượt quá 255 ký tự').optional(),
 
   depositRate: z
-    .number({ required_error: 'Tỷ lệ cọc là bắt buộc', invalid_type_error: 'Tỷ lệ cọc phải là số' })
+    .number({ message: 'Tỷ lệ cọc là bắt buộc và phải là số' })
     .int('Tỷ lệ cọc phải là số nguyên')
     .min(0, 'Tỷ lệ cọc tối thiểu là 0%')
     .max(100, 'Tỷ lệ cọc tối đa là 100%')

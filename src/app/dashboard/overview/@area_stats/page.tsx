@@ -1,7 +1,7 @@
-import { delay } from '@/constants/mock-api';
+import { getOrderTrendByMonth } from '@/features/overview/api/service';
 import { AreaGraph } from '@/features/overview/components/area-graph';
 
 export default async function AreaStats() {
-  await delay(2000);
-  return <AreaGraph />;
+  const data = await getOrderTrendByMonth();
+  return <AreaGraph data={data} />;
 }

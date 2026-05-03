@@ -10,8 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import React from 'react';
+import { getOverviewKPIs } from '@/features/overview/api/service';
 
-export default function OverViewLayout({
+export default async function OverViewLayout({
   sales,
   pie_stats,
   bar_stats,
@@ -22,92 +23,79 @@ export default function OverViewLayout({
   bar_stats: React.ReactNode;
   area_stats: React.ReactNode;
 }) {
+  const kpis = await getOverviewKPIs();
+
   return (
     <PageContainer>
       <div className='flex flex-1 flex-col space-y-2'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-2xl font-bold tracking-tight'>Hi, Welcome back 👋</h2>
+          <h2 className='text-2xl font-bold tracking-tight'>Tổng quan hệ thống 👋</h2>
         </div>
 
         <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4'>
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Total Revenue</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                $1,250.00
+              <CardDescription>Tổng doanh thu (VNĐ)</CardDescription>
+              <CardTitle className='text-xl font-semibold tabular-nums @[250px]/card:text-2xl'>
+                {new Intl.NumberFormat('vi-VN').format(kpis.totalRevenue)}
               </CardTitle>
               <CardAction>
-                <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +12.5%
+                <Badge variant='outline' className='text-green-600 border-green-200'>
+                  <Icons.check className='w-3 h-3 mr-1' />
+                  Thực thu: {new Intl.NumberFormat('vi-VN').format(kpis.paidRevenue)}
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Trending up this month <Icons.trendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>Visitors for the last 6 months</div>
+              <div className='text-muted-foreground'>Tổng giá trị các đơn hàng (trừ đơn hủy)</div>
             </CardFooter>
           </Card>
+
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>New Customers</CardDescription>
+              <CardDescription>Số đơn hàng</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                1,234
+                {kpis.totalOrders}
               </CardTitle>
               <CardAction>
-                <Badge variant='outline'>
-                  <Icons.trendingDown />
-                  -20%
-                </Badge>
+                <Icons.order className='text-blue-500' />
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Down 20% this period <Icons.trendingDown className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>Acquisition needs attention</div>
+              <div className='text-muted-foreground'>Số lượng đơn hàng đang được xử lý</div>
             </CardFooter>
           </Card>
+
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Active Accounts</CardDescription>
+              <CardDescription>Tổng khách hàng</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                45,678
+                {kpis.totalCustomers}
               </CardTitle>
               <CardAction>
-                <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +12.5%
-                </Badge>
+                <Icons.user className='text-indigo-500' />
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Strong user retention <Icons.trendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>Engagement exceed targets</div>
+              <div className='text-muted-foreground'>Số lượng khách hàng đã đăng ký</div>
             </CardFooter>
           </Card>
+
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Growth Rate</CardDescription>
+              <CardDescription>Tỉ lệ hoàn thành</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                4.5%
+                {kpis.deliveryRate.toFixed(1)}%
               </CardTitle>
               <CardAction>
-                <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +4.5%
+                <Badge variant='outline' className='text-amber-600 border-amber-200'>
+                  <Icons.trendingUp className='w-3 h-3 mr-1' />
+                  Hiệu quả
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Steady performance increase <Icons.trendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>Meets growth projections</div>
+              <div className='text-muted-foreground'>Tỉ lệ đơn hàng đã giao thành công</div>
             </CardFooter>
           </Card>
         </div>

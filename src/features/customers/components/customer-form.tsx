@@ -79,7 +79,7 @@ export default function CustomerForm({
     });
 
     if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
+      const firstError = validationResult.error.issues[0];
       toast.error(firstError.message);
       return;
     }

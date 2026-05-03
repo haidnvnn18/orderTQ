@@ -14,8 +14,31 @@ import type {
   OrdersResponse,
   OrderByIdResponse,
   CreateOrderPayload,
-  UpdateOrderStatusPayload
+  UpdateOrderStatusPayload,
+  AddPaymentPayload
 } from './types';
+
+// Helper: Chuyển đổi Prisma.Decimal thành number để không bị lỗi trên Client Components
+function serializeDecimal<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'object') {
+    // Nếu là Decimal (có hàm toNumber)
+    if ('toNumber' in obj && typeof (obj as any).toNumber === 'function') {
+      return (obj as any).toNumber() as any;
+    }
+    // Bỏ qua Date
+    if (obj instanceof Date) return obj;
+    // Xử lý mảng
+    if (Array.isArray(obj)) return obj.map(serializeDecimal) as any;
+    // Xử lý object bình thường
+    const res: any = {};
+    for (const key in obj) {
+      res[key] = serializeDecimal((obj as any)[key]);
+    }
+    return res;
+  }
+  return obj;
+}
 
 // ============================================================
 // GET ALL — Danh sách đơn hàng (phân trang, lọc, tìm kiếm)
@@ -77,12 +100,12 @@ export async function getOrders(filters: OrderFilters): Promise<OrdersResponse> 
     prisma.order.count({ where })
   ]);
 
-  return {
+  return serializeDecimal({
     orders: orders as any[],
     totalOrders,
     page,
     limit
-  };
+  });
 }
 
 // ============================================================
@@ -108,6 +131,11 @@ export async function getOrderById(id: string): Promise<OrderByIdResponse> {
             include: {
               product: { select: { id: true, title: true } }
             }
+          },
+          chinaPOLineItems: {
+            include: {
+              chinaPo: { select: { poNumber: true, trackingNumber: true } }
+            }
           }
         },
         orderBy: { historicalName: 'asc' }
@@ -121,7 +149,7 @@ export async function getOrderById(id: string): Promise<OrderByIdResponse> {
     }
   });
 
-  return { order: order as any };
+  return serializeDecimal({ order: order as any });
 }
 
 // ============================================================
@@ -199,7 +227,7 @@ export async function createOrder(data: CreateOrderPayload) {
   });
 
   revalidatePath('/dashboard/order');
-  return order;
+  return serializeDecimal(order);
 }
 
 // ============================================================
@@ -236,7 +264,7 @@ export async function updateOrderStatus(id: string, data: UpdateOrderStatusPaylo
 
   revalidatePath('/dashboard/order');
   revalidatePath(`/dashboard/order/${id}`);
-  return updated;
+  return serializeDecimal(updated);
 }
 
 // ============================================================
@@ -255,4 +283,70 @@ export async function deleteOrder(id: string) {
 
   await prisma.order.delete({ where: { id } });
   revalidatePath('/dashboard/order');
+}
+
+// ============================================================
+// ADD PAYMENT — Ghi nhận thanh toán và cập nhật trạng thái tài chính
+// ============================================================
+export async function addPayment(orderId: string, data: AddPaymentPayload) {
+  const currentOrder = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { totalAmountVnd: true, paidAmountVnd: true, status: true }
+  });
+
+  if (!currentOrder) throw new Error('Đơn hàng không tồn tại');
+
+  const updated = await prisma.$transaction(async (tx) => {
+    // 1. Tạo record thanh toán
+    await tx.payment.create({
+      data: {
+        orderId,
+        amountVnd: data.amountVnd,
+        method: data.method,
+        note: data.note ?? null,
+        paidAt: data.paidAt ?? new Date()
+      }
+    });
+
+    // 2. Tính toán tiền đã trả và trạng thái tài chính mới
+    const currentPaid = Number(currentOrder.paidAmountVnd);
+    const newPaidAmount = currentPaid + data.amountVnd;
+    const totalAmount = Number(currentOrder.totalAmountVnd);
+
+    let newFinancialStatus = 'PENDING';
+    if (newPaidAmount >= totalAmount) {
+      newFinancialStatus = 'PAID';
+    } else if (newPaidAmount > 0) {
+      newFinancialStatus = 'PARTIALLY_PAID';
+    }
+
+    // 3. Cập nhật Order
+    const order = await tx.order.update({
+      where: { id: orderId },
+      data: {
+        paidAmountVnd: newPaidAmount,
+        financialStatus: newFinancialStatus as any
+      }
+    });
+
+    // 4. Ghi log timeline (như user yêu cầu)
+    const formatVnd = (amount: number) =>
+      new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+    await tx.orderStatusLog.create({
+      data: {
+        orderId,
+        oldStatus: currentOrder.status,
+        newStatus: currentOrder.status, // Giữ nguyên trạng thái hàng hóa
+        changedByName: data.changedByName ?? null,
+        note: `Ghi nhận thanh toán: ${formatVnd(data.amountVnd)} (Phương thức: ${data.method})${data.note ? ` - ${data.note}` : ''}`
+      }
+    });
+
+    return order;
+  });
+
+  revalidatePath('/dashboard/order');
+  revalidatePath(`/dashboard/order/${orderId}`);
+  return serializeDecimal(updated);
 }

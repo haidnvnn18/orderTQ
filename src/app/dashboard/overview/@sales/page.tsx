@@ -1,7 +1,7 @@
-import { delay } from '@/constants/mock-api';
+import { getRecentOrders } from '@/features/overview/api/service';
 import { RecentSales } from '@/features/overview/components/recent-sales';
 
 export default async function Sales() {
-  await delay(3000);
-  return <RecentSales />;
+  const data = await getRecentOrders();
+  return <RecentSales data={data} />;
 }

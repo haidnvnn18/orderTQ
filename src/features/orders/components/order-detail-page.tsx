@@ -30,6 +30,7 @@ import { orderByIdOptions } from '../api/queries';
 import { updateOrderStatusMutation } from '../api/mutations';
 import type { OrderDetail, LineItemDetail, StatusLogDetail } from '../api/types';
 import Image from 'next/image';
+import { PaymentModal } from './payment-modal';
 
 // ============================================================
 // Constants
@@ -53,6 +54,13 @@ const LINE_ITEM_STATUS_MAP: Record<string, { label: string; color: string }> = {
   IN_TRANSIT: { label: 'Vận chuyển', color: 'bg-purple-100 text-purple-700' },
   ARRIVED_VN: { label: 'Kho VN', color: 'bg-teal-100 text-teal-700' },
   DELIVERED: { label: 'Đã giao', color: 'bg-emerald-100 text-emerald-700' }
+};
+
+const PAYMENT_METHOD_MAP: Record<string, string> = {
+  cash: 'Tiền mặt',
+  bank_transfer: 'Chuyển khoản',
+  momo: 'Momo',
+  other: 'Khác'
 };
 
 // ============================================================
@@ -120,6 +128,19 @@ function LineItemRow({ item }: { item: LineItemDetail }) {
           {formatCny(item.historicalPriceCny as any)} = {formatVnd(item.historicalPriceVnd as any)}{' '}
           × {item.quantity}
         </div>
+        {(item as any).chinaPOLineItems?.length > 0 && (
+          <div className='mt-1 text-xs font-medium text-blue-600 flex items-center gap-1'>
+            <Icons.send className='h-3 w-3' />
+            Vận đơn:{' '}
+            {Array.from(
+              new Set(
+                (item as any).chinaPOLineItems
+                  .map((pi: any) => pi.chinaPo?.trackingNumber)
+                  .filter(Boolean)
+              )
+            ).join(', ') || 'Chưa có'}
+          </div>
+        )}
       </div>
 
       {/* Status */}
@@ -303,12 +324,22 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
             Tạo lúc {formatDate(order.createdAt)}
           </div>
         </div>
-        <Button variant='outline' asChild>
-          <Link href='/dashboard/order'>
-            <Icons.arrowLeft className='mr-2 h-4 w-4' />
-            Quay lại danh sách
-          </Link>
-        </Button>
+        <div className='flex items-center gap-2'>
+          {['WAREHOUSE_VN', 'DELIVERING', 'COMPLETED'].includes(order.status) && (
+            <Button asChild>
+              <Link href={`/dashboard/delivery/new?orderId=${order.id}`}>
+                <Icons.product className='mr-2 h-4 w-4' />
+                Tạo phiếu giao hàng
+              </Link>
+            </Button>
+          )}
+          <Button variant='outline' asChild>
+            <Link href='/dashboard/order'>
+              <Icons.arrowLeft className='mr-2 h-4 w-4' />
+              Quay lại
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
@@ -397,6 +428,7 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                   </div>
                 )}
               </div>
+              {remaining > 0 && <PaymentModal orderId={order.id} remainingAmount={remaining} />}
             </CardContent>
           </Card>
 
@@ -456,7 +488,8 @@ export default function OrderDetailPage({ orderId }: { orderId: string }) {
                       <div>
                         <div className='font-medium'>{formatVnd(payment.amountVnd as any)}</div>
                         <div className='text-xs text-muted-foreground'>
-                          {payment.method} · {formatDate(payment.paidAt)}
+                          {PAYMENT_METHOD_MAP[payment.method] || payment.method} ·{' '}
+                          {formatDate(payment.paidAt)}
                         </div>
                         {payment.note && (
                           <div className='text-xs text-muted-foreground'>{payment.note}</div>

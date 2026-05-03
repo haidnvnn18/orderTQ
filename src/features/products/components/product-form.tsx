@@ -10,13 +10,21 @@ import { Badge } from '@/components/ui/badge';
 import { createProductMutation, updateProductMutation } from '../api/mutations';
 import type { Product } from '../api/types';
 import type { ProductMutationPayload, VariantPayload } from '../api/types';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useState, useCallback, useRef } from 'react';
 import { Icons } from '@/components/icons';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import Image from 'next/image';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { suppliersDropdownOptions } from '@/features/suppliers/api/queries';
 
 // ============================================================
 // Hàm tiện ích: Tự động sinh mã SKU từ prefix + màu + size
@@ -100,6 +108,10 @@ export default function ProductForm({
 }) {
   const router = useRouter();
   const isEdit = !!initialData;
+
+  // Supplier dropdown
+  const { data: suppliersData } = useQuery(suppliersDropdownOptions());
+  const suppliersList = suppliersData ?? [];
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -109,6 +121,7 @@ export default function ProductForm({
     initialData?.basePriceCny ? String(initialData.basePriceCny) : ''
   );
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+  const [supplierId, setSupplierId] = useState<string>(initialData?.supplierId ?? '');
 
   // SKU generation inputs
   const [skuPrefix, setSkuPrefix] = useState('');
@@ -245,6 +258,7 @@ export default function ProductForm({
       basePriceCny: Number(basePriceCny),
       images: existingImages,
       isActive,
+      supplierId: supplierId && supplierId !== 'none' ? supplierId : null,
       variants
     };
 
@@ -298,6 +312,23 @@ export default function ProductForm({
               placeholder='Mô tả chi tiết sản phẩm...'
               rows={3}
             />
+          </div>
+
+          <div className='space-y-2'>
+            <Label>Nhà cung cấp (Xưởng TQ)</Label>
+            <Select value={supplierId} onValueChange={setSupplierId}>
+              <SelectTrigger>
+                <SelectValue placeholder='-- Chọn nhà cung cấp --' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='none'>-- Không có --</SelectItem>
+                {suppliersList.map((s: any) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className='flex items-center gap-3'>

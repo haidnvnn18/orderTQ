@@ -12,42 +12,27 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
 
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 }
-];
-
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
+  total: {
+    label: 'Tổng đơn (VNĐ)',
     color: 'var(--chart-1)'
   },
-  mobile: {
-    label: 'Mobile',
+  paid: {
+    label: 'Đã thu (VNĐ)',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
 
-export function BarGraph() {
+export function BarGraph({ data }: { data: { month: string; total: number; paid: number }[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Bar Chart - Multiple
-          <Badge variant='outline'>
-            <Icons.trendingDown />
-            -5.2%
-          </Badge>
-        </CardTitle>
-        <CardDescription>January - June 2025</CardDescription>
+        <CardTitle>Doanh thu 6 tháng gần nhất</CardTitle>
+        <CardDescription>So sánh tổng giá trị đơn hàng và số tiền thực thu</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart accessibilityLayer data={data}>
             <rect
               x='0'
               y='0'
@@ -65,23 +50,15 @@ export function BarGraph() {
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator='dashed' hideLabel />}
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator='dashed' />} />
             <Bar
-              dataKey='desktop'
+              dataKey='total'
               color='var(--chart-1)'
-              fill='var(--color-desktop)'
+              fill='var(--color-total)'
               shape={<CustomHatchedBar isHatched={false} />}
               radius={4}
             />
-            <Bar
-              dataKey='mobile'
-              fill='var(--color-mobile)'
-              shape={<CustomHatchedBar />}
-              radius={4}
-            />
+            <Bar dataKey='paid' fill='var(--color-paid)' shape={<CustomHatchedBar />} radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>

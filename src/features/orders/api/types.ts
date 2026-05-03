@@ -2,7 +2,8 @@
 // Order API — Type Definitions
 // ============================================================
 
-import type { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
+type Decimal = Prisma.Decimal;
 
 // ============================================================
 // FILTERS
@@ -162,5 +163,13 @@ export interface CreateOrderPayload {
 export interface UpdateOrderStatusPayload {
   status: string;
   note?: string | null;
+  changedByName?: string | null;
+}
+
+export interface AddPaymentPayload {
+  amountVnd: number;
+  method: string;
+  note?: string | null;
+  paidAt?: Date;
   changedByName?: string | null;
 }

@@ -13,75 +13,54 @@ import { Badge } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
 import React from 'react';
 
-const chartData = [
-  { month: 'January', desktop: 342, mobile: 245 },
-  { month: 'February', desktop: 876, mobile: 654 },
-  { month: 'March', desktop: 512, mobile: 387 },
-  { month: 'April', desktop: 629, mobile: 521 },
-  { month: 'May', desktop: 458, mobile: 412 },
-  { month: 'June', desktop: 781, mobile: 598 },
-  { month: 'July', desktop: 394, mobile: 312 },
-  { month: 'August', desktop: 925, mobile: 743 },
-  { month: 'September', desktop: 647, mobile: 489 },
-  { month: 'October', desktop: 532, mobile: 476 },
-  { month: 'November', desktop: 803, mobile: 687 },
-  { month: 'December', desktop: 271, mobile: 198 }
-];
-
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
+  newOrders: {
+    label: 'Đơn mới',
     color: 'var(--chart-1)'
   },
-  mobile: {
-    label: 'Mobile',
+  completedOrders: {
+    label: 'Hoàn thành',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
 
-export function AreaGraph() {
+export function AreaGraph({
+  data
+}: {
+  data: { month: string; newOrders: number; completedOrders: number }[];
+}) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Dotted Area Chart
-          <Badge variant='outline'>
-            <Icons.trendingUp />
-            -5.2%
-          </Badge>
-        </CardTitle>
-        <CardDescription>Showing total visitors for the last 6 months</CardDescription>
+        <CardTitle>Xu hướng đơn hàng</CardTitle>
+        <CardDescription>
+          Số lượng đơn hàng mới và đơn hoàn thành trong 12 tháng qua
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <AreaChart accessibilityLayer data={chartData}>
+          <AreaChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} strokeDasharray='3 3' />
-            <XAxis
-              dataKey='month'
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
+            <XAxis dataKey='month' tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <defs>
               <DottedBackgroundPattern config={chartConfig} />
             </defs>
             <Area
-              dataKey='mobile'
+              dataKey='completedOrders'
               type='natural'
-              fill='url(#dotted-background-pattern-mobile)'
+              fill='url(#dotted-background-pattern-completedOrders)'
               fillOpacity={0.4}
-              stroke='var(--color-mobile)'
+              stroke='var(--color-completedOrders)'
               stackId='a'
               strokeWidth={0.8}
             />
             <Area
-              dataKey='desktop'
+              dataKey='newOrders'
               type='natural'
-              fill='url(#dotted-background-pattern-desktop)'
+              fill='url(#dotted-background-pattern-newOrders)'
               fillOpacity={0.4}
-              stroke='var(--color-desktop)'
+              stroke='var(--color-newOrders)'
               stackId='a'
               strokeWidth={0.8}
             />

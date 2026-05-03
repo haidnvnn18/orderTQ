@@ -77,10 +77,46 @@ export const navGroups: NavGroup[] = [
         items: []
       },
       {
+        title: 'Đặt hàng TQ',
+        url: '/dashboard/china-po',
+        icon: 'send',
+        shortcut: ['t', 'q'],
+        isActive: false,
+        items: []
+      },
+      {
+        title: 'Kiện hàng vận chuyển',
+        url: '/dashboard/shipment',
+        icon: 'product',
+        isActive: false,
+        items: []
+      },
+      {
+        title: 'Giao hàng (VN)',
+        url: '/dashboard/delivery',
+        icon: 'send',
+        isActive: false,
+        items: []
+      },
+      {
+        title: 'Hoàn trả',
+        url: '/dashboard/return',
+        icon: 'trash',
+        isActive: false,
+        items: []
+      },
+      {
         title: 'Customer',
         url: '/dashboard/customer',
         icon: 'user',
         shortcut: ['c', 'c'],
+        isActive: false,
+        items: []
+      },
+      {
+        title: 'Nhà cung cấp',
+        url: '/dashboard/supplier',
+        icon: 'teams',
         isActive: false,
         items: []
       },
