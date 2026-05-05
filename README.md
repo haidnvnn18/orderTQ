@@ -189,7 +189,6 @@ Icon map tập trung tại `src/components/icons.tsx` (dùng `@tabler/icons-reac
 - Hoàn thiện UI/UX, tối ưu trải nghiệm người dùng
 - Deploy lên môi trường staging/production để đối tác chạy test
 - Hỗ trợ và nhận feedback từ người dùng
-
 ---
 
 ## Environment Variables
