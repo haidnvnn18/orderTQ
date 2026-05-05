@@ -175,18 +175,20 @@ Icon map tập trung tại `src/components/icons.tsx` (dùng `@tabler/icons-reac
 
 | Module | Routes | Ghi chú |
 |--------|--------|---------|
+| **Dashboard** | `/dashboard/overview` | Dashboard tổng quan với các chỉ số thực tế từ DB |
 | **Products** | `/dashboard/product` + `[productId]` | Listing, form tạo/sửa, bulk import (ImportJob) |
 | **Customers** | `/dashboard/customer` + `[customerId]` | Listing, form tạo/sửa |
-| **Orders — Giai đoạn 1** | `/dashboard/order` + `new` + `[orderId]` | Listing, tạo đơn (master-detail picker), chi tiết + timeline + cập nhật status |
+| **Orders — Giai đoạn 1** | `/dashboard/order` + `new` + `[orderId]` | Listing, tạo đơn, chi tiết, timeline, cập nhật status |
+| **Payments — Giai đoạn 2** | `/dashboard/order/[orderId]` | Ghi nhận thanh toán, tự cập nhật `financialStatus` |
+| **China POs — Giai đoạn 3** | `/dashboard/china-po` | Gom `OrderLineItem` PENDING → tạo đơn TQ |
+| **Shipment Batches — Giai đoạn 4** | `/dashboard/shipment-batch` | Tạo batch, track hàng về VN, đối soát số lượng |
+| **Deliveries & Returns — Giai đoạn 5** | `/dashboard/delivery` | Giao hàng cho khách VN, xử lý hoàn trả |
 
-### 🔜 Giai đoạn kế tiếp (theo Implementation Plan)
+### 🔜 Giai đoạn kế tiếp
 
-| Giai đoạn | Module | Mô tả |
-|-----------|--------|-------|
-| **Giai đoạn 2** | Payments | Ghi nhận thanh toán trong trang chi tiết đơn, tự cập nhật `financialStatus` |
-| **Giai đoạn 3** | China POs | Gom `OrderLineItem` PENDING theo Supplier → tạo `ChinaPurchaseOrder` |
-| **Giai đoạn 4** | Shipment Batches | Tạo batch, track hàng về VN, đối soát số lượng |
-| **Giai đoạn 5** | Deliveries & Returns | Giao hàng khách VN, xử lý hoàn trả |
+- Hoàn thiện UI/UX, tối ưu trải nghiệm người dùng
+- Deploy lên môi trường staging/production để đối tác chạy test
+- Hỗ trợ và nhận feedback từ người dùng
 
 ---
 
