@@ -45,21 +45,21 @@ export const navGroups: NavGroup[] = [
         shortcut: ['d', 'd'],
         items: []
       },
-      {
-        title: 'Workspaces',
-        url: '/dashboard/workspaces',
-        icon: 'workspace',
-        isActive: false,
-        items: []
-      },
-      {
-        title: 'Teams',
-        url: '/dashboard/workspaces/team',
-        icon: 'teams',
-        isActive: false,
-        items: [],
-        access: { requireOrg: true }
-      },
+      // {
+      //   title: 'Workspaces',
+      //   url: '/dashboard/workspaces',
+      //   icon: 'workspace',
+      //   isActive: false,
+      //   items: []
+      // },
+      // {
+      //   title: 'Teams',
+      //   url: '/dashboard/workspaces/team',
+      //   icon: 'teams',
+      //   isActive: false,
+      //   items: [],
+      //   access: { requireOrg: true }
+      // },
       {
         title: 'Product',
         url: '/dashboard/product',
@@ -119,38 +119,34 @@ export const navGroups: NavGroup[] = [
         icon: 'teams',
         isActive: false,
         items: []
-      },
-      {
-        title: 'Users',
-        url: '/dashboard/users',
-        icon: 'teams',
-        shortcut: ['u', 'u'],
-        isActive: false,
-        items: []
       }
+      // {
+      //   title: 'Users',
+      //   url: '/dashboard/users',
+      //   icon: 'teams',
+      //   shortcut: ['u', 'u'],
+      //   isActive: false,
+      //   items: []
+      // }
     ]
-  },
-  {
-    label: 'Elements',
-    items: []
   },
   {
     label: '',
     items: [
-      {
-        title: 'Pro',
-        url: '#',
-        icon: 'pro',
-        isActive: true,
-        items: [
-          {
-            title: 'Exclusive',
-            url: '/dashboard/exclusive',
-            icon: 'exclusive',
-            shortcut: ['e', 'e']
-          }
-        ]
-      },
+      // {
+      //   title: 'Pro',
+      //   url: '#',
+      //   icon: 'pro',
+      //   isActive: true,
+      //   items: [
+      //     {
+      //       title: 'Exclusive',
+      //       url: '/dashboard/exclusive',
+      //       icon: 'exclusive',
+      //       shortcut: ['e', 'e']
+      //     }
+      //   ]
+      // },
       {
         title: 'Account',
         url: '#',
@@ -163,14 +159,13 @@ export const navGroups: NavGroup[] = [
             icon: 'profile',
             shortcut: ['m', 'm']
           },
-
-          {
-            title: 'Billing',
-            url: '/dashboard/billing',
-            icon: 'billing',
-            shortcut: ['b', 'b'],
-            access: { requireOrg: true }
-          },
+          // {
+          //   title: 'Billing',
+          //   url: '/dashboard/billing',
+          //   icon: 'billing',
+          //   shortcut: ['b', 'b'],
+          //   access: { requireOrg: true }
+          // },
           {
             title: 'Login',
             shortcut: ['l', 'l'],
