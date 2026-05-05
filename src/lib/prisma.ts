@@ -21,7 +21,7 @@ function createPrismaClient() {
     max: 5 // Serverless: giữ pool nhỏ, tránh cạn kiệt connection
   });
 
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaPg(pool as any);
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
